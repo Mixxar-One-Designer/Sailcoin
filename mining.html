@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sailcoin Mining</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .mining-container {
+            display: inline-block;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        .mining-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .mining-progress {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mining-container">
+        <h1>Welcome to Sailcoin Mining</h1>
+        <button class="mining-button" onclick="startMining()">Start Mining</button>
+        <div class="mining-progress" id="miningProgress"></div>
+    </div>
+
+    <script>
+        function startMining() {
+            const progressDiv = document.getElementById('miningProgress');
+            progressDiv.innerHTML = 'Mining started...';
+            
+            let balance = 0;
+            const miningInterval = setInterval(() => {
+                balance += 1;
+                progressDiv.innerHTML = `Mining in progress... Current SLC balance: ${balance}`;
+                
+                if (balance >= 5) { // Simulate mining completion
+                    clearInterval(miningInterval);
+                    progressDiv.innerHTML = `Mining completed! Final SLC balance: ${balance}`;
+                }
+            }, 2000); // Simulate mining step every 2 seconds
+        }
+    </script>
+</body>
+</html>
