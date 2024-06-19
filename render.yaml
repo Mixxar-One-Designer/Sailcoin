@@ -1,0 +1,9 @@
+services:
+  - type: worker
+    name: sailcoin-bot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python sailcoin_bot.py"
+    envVars:
+      - key: 6897920395:AAEl4SH-ZdkLdYwC8Ex9t7sp5jNhT2Ei2ws
+        fromDatabase: true  # This assumes you've configured your bot token in Render's environment variables
