@@ -1,7 +1,6 @@
 import logging
-import asyncio
 import sqlite3
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 
 # Replace with your actual bot token
@@ -61,33 +60,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
     logger.info(f"Sent welcome message to {user.first_name} ({user.id})")
 
-async def start_mining(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    user_id = query.from_user.id
-
-    # Initialize mining session
-    await query.answer()
-    await query.edit_message_text(text="Starting mining...")
-
-    balance = get_user_balance(user_id)
-    for i in range(5):  # Simulate 5 steps of mining
-        await asyncio.sleep(2)  # Wait 2 seconds to simulate mining time
-        balance += 1  # Increment balance
-        update_user_balance(user_id, balance)  # Update balance in database
-
-        # Update user with current balance
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=f"Mining in progress... Current SLC balance: {balance}"
-        )
-
-    # Final message after mining is complete
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=f"Mining completed! Final SLC balance: {balance}"
-    )
-    logger.info(f"Mining completed for user {user_id}")
-
 async def referral_earning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
@@ -100,9 +72,7 @@ async def referral_earning(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
 
-    if query.data == 'start_mining':
-        await start_mining(update, context)
-    elif query.data == 'referral_earning':
+    if query.data == 'referral_earning':
         await referral_earning(update, context)
 
 def main() -> None:
