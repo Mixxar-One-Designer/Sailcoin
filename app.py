@@ -1,9 +1,9 @@
 import logging
 import sqlite3
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 
-# Replace with your actual bot token
+# Bot token
 TOKEN = '6897920395:AAEl4SH-ZdkLdYwC8Ex9t7sp5jNhT2Ei2ws'
 SAILCOIN_IMAGE_ID = 'sailcoin_moon.JPG'  # Replace with the actual file ID of your image
 SAILCOIN_COMMUNITY_URL = 'https://t.me/salcoin_dot'  # Replace with the actual URL of your Sailcoin community
@@ -17,7 +17,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Database setup
-conn = sqlite3.connect('sailcoin_users.db')
+conn = sqlite3.connect('sailcoin_users.db', check_same_thread=False)
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, balance INTEGER)''')
 conn.commit()
