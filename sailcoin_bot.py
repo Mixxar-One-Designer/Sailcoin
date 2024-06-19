@@ -49,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = (
         f"Hello {user.first_name}, Welcome to Sailcoin\n"
         f"News: @salcoin_dot\n"
-        f"Tap on the Sailcoin and watch your balance grow.\n\n"
+        f"Tap on Sailcoin and watch your balance grow.\n\n"
         f"SLC: {balance}"
     )
     await context.bot.send_photo(
