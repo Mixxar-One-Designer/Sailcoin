@@ -2,13 +2,13 @@
 FROM python:3.10-slim
 
 # Set the working directory in the container
-WORKDIR /Sailcoin_Bot
+WORKDIR /SAILCOIN_BOT
 
-# Copy the current directory contents into the container at /app
-COPY . /sailcoin_bot
+# Copy the current directory contents into the container at /SAILCOIN_BOT
+COPY . /SAILCOIN_BOT
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /SAILCOIN_BOT/requirements.txt
 
 # Make port 8443 available to the world outside this container
 EXPOSE 8443
@@ -16,5 +16,5 @@ EXPOSE 8443
 # Define environment variable
 ENV NAME SailcoinBot
 
-# Run bot.py when the container launches
+# Run your_script_name.py when the container launches
 CMD ["python", "app.py"]
