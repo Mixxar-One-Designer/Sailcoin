@@ -1,0 +1,1 @@
+worker: python sailcoin_bot.py
