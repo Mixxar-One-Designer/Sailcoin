@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import sqlite3
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 
@@ -7,23 +8,41 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 TOKEN = '6897920395:AAEl4SH-ZdkLdYwC8Ex9t7sp5jNhT2Ei2ws'
 SAILCOIN_IMAGE_ID = 'sailcoin_moon.JPG'  # Replace with the actual file ID of your image
 SAILCOIN_COMMUNITY_URL = 'https://t.me/salcoin_dot'  # Replace with the actual URL of your Sailcoin community
+SAILCOIN_MINING_URL = 'https://sailcoin-mining.vercel.app/'  # Your GitHub Pages URL
 
-# User data (This should ideally be stored in a database)
-user_data = {}
-
-# Enable logging
+# Initialize logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
+# Database setup
+conn = sqlite3.connect('sailcoin_users.db')
+c = conn.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, balance INTEGER)''')
+conn.commit()
+
+def get_user_balance(user_id):
+    c.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,))
+    result = c.fetchone()
+    return result[0] if result else 0
+
+def update_user_balance(user_id, balance):
+    c.execute('INSERT OR REPLACE INTO users (user_id, balance) VALUES (?, ?)', (user_id, balance))
+    conn.commit()
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a welcome message with buttons when the command /start is issued."""
     user = update.effective_user
-    user_data[user.id] = {'balance': 0}  # Initialize user balance
+    user_id = user.id
+
+    # Initialize user balance in database if not exists
+    if get_user_balance(user_id) == 0:
+        update_user_balance(user_id, 0)
+
+    balance = get_user_balance(user_id)
     keyboard = [
-        [InlineKeyboardButton("Let's Go", callback_data='start_mining')],
+        [InlineKeyboardButton("Let's Go", url=SAILCOIN_MINING_URL)],
         [InlineKeyboardButton("Join Sailcoin Community", url=SAILCOIN_COMMUNITY_URL)],
         [InlineKeyboardButton("Referral Earning", callback_data='referral_earning')],
     ]
@@ -32,7 +51,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         f"Hello {user.first_name}, Welcome to Sailcoin\n"
         f"News: @salcoin_dot\n"
         f"Tap on Sailcoin and watch your balance grow.\n\n"
-        f"SLC: 0"
+        f"SLC: {balance}"
     )
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
@@ -40,45 +59,45 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         caption=message,
         reply_markup=reply_markup
     )
+    logger.info(f"Sent welcome message to {user.first_name} ({user.id})")
 
 async def start_mining(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Simulate the mining process and update the user's balance."""
     query = update.callback_query
     user_id = query.from_user.id
-    user = query.from_user
 
     # Initialize mining session
     await query.answer()
     await query.edit_message_text(text="Starting mining...")
 
-    # Simulate mining process
+    balance = get_user_balance(user_id)
     for i in range(5):  # Simulate 5 steps of mining
         await asyncio.sleep(2)  # Wait 2 seconds to simulate mining time
-        user_data[user_id]['balance'] += 1  # Increment balance
+        balance += 1  # Increment balance
+        update_user_balance(user_id, balance)  # Update balance in database
 
         # Update user with current balance
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=f"Mining in progress... Current SLC balance: {user_data[user_id]['balance']}"
+            text=f"Mining in progress... Current SLC balance: {balance}"
         )
 
     # Final message after mining is complete
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Mining completed! Final SLC balance: {user_data[user_id]['balance']}"
+        text=f"Mining completed! Final SLC balance: {balance}"
     )
+    logger.info(f"Mining completed for user {user_id}")
 
 async def referral_earning(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Generate and send referral link."""
     query = update.callback_query
     await query.answer()
 
     user_id = query.from_user.id
     referral_link = f"https://t.me/sailcoin_bot?start={user_id}"  # Replace with your bot's username
     await query.edit_message_text(text=f"Share this referral link with your friends: {referral_link}")
+    logger.info(f"Sent referral link to user {user_id}")
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle button clicks."""
     query = update.callback_query
 
     if query.data == 'start_mining':
@@ -88,15 +107,18 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def main() -> None:
     """Start the bot."""
-    # Create the Application and pass it your bot's token.
-    application = Application.builder().token(TOKEN).build()
+    try:
+        # Create the Application and pass it your bot's token.
+        application = Application.builder().token(TOKEN).build()
 
-    # Add handlers
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(button))
+        # Add handlers
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CallbackQueryHandler(button))
 
-    # Run the bot until you press Ctrl-Cs
-    application.run_polling()
+        # Run the bot until you press Ctrl-C
+        application.run_polling()
+    except Exception as e:
+        logger.error(f"Error in main function: {e}")
 
 if __name__ == '__main__':
     main()
