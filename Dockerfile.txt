@@ -10,11 +10,9 @@ COPY . /SAILCOIN_BOT
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r /SAILCOIN_BOT/requirements.txt
 
-# Make port 8443 available to the world outside this container
-EXPOSE 8443
-
-# Define environment variable
-ENV NAME SailcoinBot
-
-# Run your_script_name.py when the container launches
+# Make sure your application listens on port 8443
+# Replace "app.py" with the actual filename of your Python script
 CMD ["python", "app.py"]
+
+# Expose port 8443 to allow incoming connections
+EXPOSE 8443
